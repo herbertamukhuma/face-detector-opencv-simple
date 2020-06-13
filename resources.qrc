@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/config.json</file>
+        <file>qml/Main.qml</file>
+    </qresource>
+</RCC>
