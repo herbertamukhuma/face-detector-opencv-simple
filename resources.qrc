@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>qml/config.json</file>
         <file>qml/Main.qml</file>
+        <file>assets/classifiers/haarcascade_frontalface_default.xml</file>
     </qresource>
 </RCC>
