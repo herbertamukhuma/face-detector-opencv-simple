@@ -3,7 +3,7 @@ CONFIG += felgo
 
 QT += multimedia-private
 
-PRODUCT_IDENTIFIER = com.bunistack.FaceDetectorOpenCV
+PRODUCT_IDENTIFIER = com.bunistack.FaceDetectorOpenCVSimple
 PRODUCT_VERSION_NAME = 1.0.0
 PRODUCT_VERSION_CODE = 1
 

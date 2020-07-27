@@ -3,7 +3,6 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtMultimedia 5.13
 import CVFilter 1.0
-import QtSensors 5.11
 
 App {
     width: 900
@@ -24,35 +23,11 @@ App {
         }
     }
 
-    OrientationSensor{
-        active: true
-
-        Component.onCompleted: start()
-
-        onReadingChanged: {
-
-            switch(reading.orientation){
-            case OrientationReading.TopUp:
-                cvFilter.videoOutputOrientation = 270;
-                break;
-            case OrientationReading.TopDown:
-                cvFilter.videoOutputOrientation = 90;
-                break;
-            case OrientationReading.LeftUp:
-                cvFilter.videoOutputOrientation = 180;
-                break;
-            case OrientationReading.RightUp:
-                cvFilter.videoOutputOrientation = 0;
-                break;
-            }
-        }
-    }
-
     Camera {
         id: camera
         position: Camera.FrontFace
         viewfinder {
-            //resolution: "320x240"
+            //resolution: "320x240"            
             maximumFrameRate: 15
         }
     }
@@ -70,15 +45,17 @@ App {
 
             rects = JSON.parse(rects);
 
+            var contentRect = output.contentRect;
+
             for(let i = 0; i < rects.length; i++){
 
                 var boundingBox = boundingBoxesHolder.itemAt(i);
-                //var r = output.mapNormalizedRectToItem(Qt.rect(rects[i].rX, rects[i].rY, rects[i].rWidth, rects[i].rHeight));
+
                 var r = {
-                    x: rects[i].rX * output.width,
-                    y: rects[i].rY * output.height,
-                    width: rects[i].rWidth * output.width,
-                    height: rects[i].rHeight * output.height
+                    x: rects[i].rX * contentRect.width,
+                    y: rects[i].rY * contentRect.height,
+                    width: rects[i].rWidth * contentRect.width,
+                    height: rects[i].rHeight * contentRect.height
                 };
 
                 boundingBox.x = r.x;
@@ -97,44 +74,27 @@ App {
         id: output
         source: camera
         anchors.fill: parent
-        focus : visible // to receive focus and capture key events when visible
+        focus : visible
         fillMode: VideoOutput.PreserveAspectCrop
         filters: [cvFilter]
         autoOrientation: true
 
-        Repeater{
-            id: boundingBoxesHolder
-            model: 20
-
-            Rectangle{
-                border.width: 2
-                border.color: "yellow"
-                color: "transparent"
-                visible: false
-            }
-        }
-
-        Text {
-            width: contentWidth
-            height: 20
+        //bounding boxes parent
+        Item {
+            width: output.contentRect.width
+            height: output.contentRect.height
             anchors.centerIn: parent
-            color: "red"
-            text: "camera orientation: " + camera.orientation + "\noutput orientation: " + output.orientation
-        }
 
-        Button{
-            width: 150
-            height: 40
-            text: "Toggle"
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 30
-            anchors.horizontalCenter: parent.horizontalCenter
+            Repeater{
+                id: boundingBoxesHolder
+                model: 20
 
-            onClicked: {
-                if(camera.position === Camera.FrontFace){
-                    camera.position = Camera.BackFace;
-                }else{
-                    camera.position = Camera.FrontFace;
+                Rectangle{
+                    border.width: 3
+                    border.color: "#2BE982"
+                    visible: false
+                    color: "transparent"
+                    radius: 10
                 }
             }
         }

@@ -91,25 +91,6 @@ QImage CVFilter::videoFrameToImage(QVideoFrame *frame)
     return QImage();
 }
 
-QImage CVFilter::makeImageUpright(QImage image)
-{
-    QPoint center = image.rect().center();
-    QMatrix matrix;
-    matrix.translate(center.x(), center.y());
-
-    int rotation;
-
-    if(m_videoOutputOrientation > 180){
-        rotation = (360 - m_videoOutputOrientation);
-    }else {
-        rotation = -m_videoOutputOrientation;
-    }
-
-    matrix.rotate(rotation);
-
-    return image.transformed(matrix);
-}
-
 CVFilterRunnable::CVFilterRunnable(CVFilter *filter) : QObject(nullptr), filter(filter)
 {
 
@@ -142,29 +123,32 @@ QVideoFrame CVFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceFormat 
     QImage image = filter->videoFrameToImage(input);    
 
     // All processing has to happen in another thread, as we are now in the UI thread.
-    filter->processThread = QtConcurrent::run(this, &CVFilterRunnable::processVideoFrameProbed, image);
+    filter->processThread = QtConcurrent::run(this, &CVFilterRunnable::processImage, image);
 
     return * input;
 }
 
-void CVFilterRunnable::processVideoFrameProbed(QImage &image)
+void CVFilterRunnable::processImage(QImage &image)
 {    
 
-    if(!image.isNull()){        
-
+    //if android, make image upright
 #ifdef Q_OS_ANDROID
-        //make the image upright in android
-        image = filter->makeImageUpright(image);
-#endif //Q_OS_ANDROID
+    QPoint center = image.rect().center();
+    QMatrix matrix;
+    matrix.translate(center.x(), center.y());
+    matrix.rotate(90);
+    image = image.transformed(matrix);
+#endif
 
+    if(!image.isNull()){        
         detect(image);
     }
 
-    QString filename = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "/" + "my_image.png";
+//    QString filename = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "/" + "my_image.png";
 
-    if(!QFile::exists(filename)){
-        image.save(filename);
-    }
+//    if(!QFile::exists(filename)){
+//        image.save(filename);
+//    }
 
 }
 
@@ -186,9 +170,7 @@ void CVFilterRunnable::detect(QImage image)
 
     std::vector<cv::Rect> detected;
 
-    /*
-     * Resize in not mandatory but it can speed up things quite a lot!
-     */
+    //resize the frame
     double imageWidth = image.size().width();
     double imageHeight = image.size().height();
 
@@ -203,13 +185,14 @@ void CVFilterRunnable::detect(QImage image)
     QJsonObject rect;
 
     double rX, rY, rWidth, rHeight;
+    Size frameSize = frameGray.size();
 
     for(size_t i = 0; i < detected.size(); i++){
 
-        rX = float(detected[i].x) / float(frameGray.cols);
-        rY = float(detected[i].y) / float(frameGray.rows);
-        rWidth = float(detected[i].width) / float(frameGray.cols);
-        rHeight = float(detected[i].height) / float(frameGray.rows);
+        rX = double(detected[i].x) / double(frameSize.width);
+        rY = double(detected[i].y) / double(frameSize.height);
+        rWidth = double(detected[i].width) / double(frameSize.width);
+        rHeight = double(detected[i].height) / double(frameSize.height);
 
 //        Point center( detected[i].x + detected[i].width/2, detected[i].y + detected[i].height/2 );
 //        ellipse( frameGray, center, Size( detected[i].width/2, detected[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4 );
