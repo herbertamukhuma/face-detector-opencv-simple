@@ -3,5 +3,7 @@
         <file>qml/config.json</file>
         <file>qml/Main.qml</file>
         <file>assets/classifiers/haarcascade_frontalface_default.xml</file>
+        <file>assets/classifiers/lbpcascade_frontalface.xml</file>
+        <file>assets/classifiers/lbpcascade_profileface.xml</file>
     </qresource>
 </RCC>

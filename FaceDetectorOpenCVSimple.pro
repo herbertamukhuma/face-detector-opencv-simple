@@ -23,7 +23,7 @@ SOURCES += main.cpp \
 HEADERS += \
     cvfilter.h
 
-INCLUDEPATH += C:/opencv/build/include
+INCLUDEPATH += C:/opencv/build/opencv-4.4.0/install/include
 
 android {
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
@@ -69,11 +69,11 @@ ios {
 win32 {
     RC_FILE += win/app_icon.rc
 
-    LIBS += -LC:/opencv/build/x86/mingw/lib
+    LIBS += -LC:/opencv/build/opencv-4.4.0/lib
 
-    LIBS += -lopencv_core410 \
-            -lopencv_imgproc410 \
-            -lopencv_objdetect410
+    LIBS += -lopencv_core440 \
+            -lopencv_imgproc440 \
+            -lopencv_objdetect440
 }
 macx {
     ICON = macx/app_icon.icns

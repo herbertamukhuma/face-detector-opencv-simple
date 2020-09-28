@@ -5,7 +5,7 @@
 CVFilter::CVFilter(QObject *parent) : QAbstractVideoFilter(parent)
 {
 
-    QFile xml(":/assets/classifiers/haarcascade_frontalface_default.xml");
+    QFile xml(":/assets/classifiers/lbpcascade_frontalface.xml");
 
     if(xml.open(QFile::ReadOnly | QFile::Text))
     {
@@ -165,7 +165,13 @@ void CVFilterRunnable::detect(QImage image)
     //cv::flip(frame, frame, 0);
 
     Mat frameGray;
-    cvtColor( frame, frameGray, COLOR_BGR2GRAY );
+
+    if(frame.channels() == 3){
+        cvtColor( frame, frameGray, COLOR_BGR2GRAY );
+    }else if(frame.channels() == 4) {
+        cvtColor( frame, frameGray, COLOR_BGRA2GRAY );
+    }
+
     equalizeHist( frameGray, frameGray );
 
     std::vector<cv::Rect> detected;
